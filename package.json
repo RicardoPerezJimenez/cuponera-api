@@ -1,0 +1,9 @@
+{
+  "name": "cuponera-pro-api",
+  "version": "1.0.0",
+  "main": "api/cupones.js",
+  "dependencies": {
+    "node-fetch": "^2.6.7",
+    "jsdom": "^22.1.0"
+  }
+}
