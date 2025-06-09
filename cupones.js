@@ -1,25 +1,28 @@
-const fetch = require('node-fetch');
-const { JSDOM } = require('jsdom');
+import fetch from 'node-fetch';
+import { JSDOM } from 'jsdom';
 
-module.exports = async (req, res) => {
-  const tienda = req.query.tienda || 'bluehost.com';
+export default async function handler(req, res) {
+  const tienda = req.query.tienda || "bluehost.com";
   const url = `https://www.retailmenot.com/view/${tienda}`;
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0"
+      }
+    });
     const html = await response.text();
-
     const dom = new JSDOM(html);
     const document = dom.window.document;
 
-    const couponElements = document.querySelectorAll('[data-clipboard-text]');
-    const cupones = Array.from(couponElements)
-      .map(el => el.getAttribute('data-clipboard-text'))
-      .filter(Boolean);
+    const cupones = [];
+    document.querySelectorAll('[data-testid="offer-title"]').forEach(el => {
+      const texto = el.textContent.trim();
+      if (texto.length < 60) cupones.push(texto);
+    });
 
     res.status(200).json({ tienda, cupones });
-  } catch (error) {
-    console.error('Error scraping cupones:', error);
-    res.status(500).json({ error: 'Error al obtener cupones.' });
+  } catch (err) {
+    res.status(500).json({ error: "Scraping error", message: err.message });
   }
-};
+}
